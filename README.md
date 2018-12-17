@@ -15,7 +15,7 @@ and **Enable** the plugin
 **https:/example.com/index.php/admin/survey/sa/rendersidemenulink/surveyid/{survey_id}/subaction/plugins**
 2. Open **Settings for plugin AuthSurvey** accordion
 3. Click **Enabled** checkbox
-4. Open **Settings for plugin AuthSurvey** accordion
+4. Open **Settings for plugin SAMLAffiliationPermit** accordion
 5. Click **Enabled** checkbox
 
 ![Plugin settings](images/plugin_settings.png)
@@ -30,3 +30,4 @@ and **Enable** the plugin
 * **Allowed Affiliations** Comma seperated list of the allowed affiliations that are allowed to participate on the survey
 
 ## Images
+![Global Plugin settings](images/global_settings.png)
