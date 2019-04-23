@@ -90,7 +90,7 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
 
         $attributes = $ssp->getAttributes();
 
-        $affiliationField = $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'));
+        $affiliationField = $this->get('affiliation_mapping_survey', 'Survey', $this->event->get('surveyId'));
 
         return $attributes[$affiliationField][0];
     }
