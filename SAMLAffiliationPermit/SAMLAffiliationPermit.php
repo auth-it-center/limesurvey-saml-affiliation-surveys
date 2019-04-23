@@ -24,7 +24,8 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
     protected $settings = [
         'affiliation_mapping' => [
             'type' => 'string',
-            'label' => 'SAML attribute used as affiliation',
+            'label' => 'SAML Attribute',
+            'help' => 'SAML attribute used as affiliation',
             'default' => 'eduPersonPrimaryAffiliation',
         ]
     ];
@@ -49,14 +50,21 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
                     'label' => 'Enabled',
                     'help' => 'Enable the plugin for this survey',
                     'default' => false,
-                    'current' => $this->get('SAML_affiliation_permit_enabled', 'Survey', $event->get('survey')),
+                    'current' => $this->get('SAML_affiliation_permit_enabled', 'Survey', $event->get('survey'), false),
+                ],
+                'affiliation_mapping_survey' => [
+                    'type' => 'string',
+                    'label' => 'SAML Attribute',
+                    'help' => 'SAML attribute used as affiliation for current survey',
+                    'default' => $this->get('affiliation_mapping', null, null, 'eduPersonPrimaryAffiliation'),
+                    'current' => $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'), 'eduPersonPrimaryAffiliation'),
                 ],
                 'allowed_affiliation' => [
                     'type' => 'string',
                     'label' => 'Allowed Affiliations',
                     'help' => 'Comma seperated, without spaces',
                     'default' => 'faculty,student',
-                    'current' => $this->get('allowed_affiliation', 'Survey', $event->get('survey')),
+                    'current' => $this->get('allowed_affiliation', 'Survey', $event->get('survey'), 'faculty,student'),
                 ]
             ]
         ]);
@@ -78,13 +86,11 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
 
         $ssp = $AuthSAML->get_saml_instance();
 
-        if (!$ssp->isAuthenticated()) {
-            throw new CHttpException(401, gT("We are sorry but you have to login in order to do this."));
-        }
+        $ssp->requireAuth();
 
         $attributes = $ssp->getAttributes();
 
-        $affiliationField = $this->get('affiliation_mapping', null, null, 'eduPersonPrimaryAffiliation');
+        $affiliationField = $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'));
 
         return $attributes[$affiliationField][0];
     }
@@ -104,7 +110,7 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
             $affiliation = $this->getAffiliation();
             $affiliations = $this->getSurveyAllowedAffilations();
             if (!in_array($affiliation, $affiliations)) {
-                throw new CHttpException(403, gT("We are sorry but your affiliation is not allowed to participate in this survey."));
+                throw new CHttpException(403, gT("We are sorry but you are not allowed to participate in this survey."));
             }
         }
     }
