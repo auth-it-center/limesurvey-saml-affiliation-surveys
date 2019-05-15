@@ -23,10 +23,11 @@ and **Enable** the plugin
 ## Configuration options
 
 ### Global
-* **SAML attribute used as affiliation** The SAML attribute to apply the filter on
+* **SAML Attribute** Global SAML attribute to filter users with. Can be modified in every survey.
 
 ### Plugin
 * **Enabled** If checked then the plugin is enabled for the selected survey
+* **SAML Attribute** SAML attribute to filter users with for current survey
 * **Allowed Affiliations** Comma seperated list of the allowed affiliations that are allowed to participate on the survey
 
 ## Images
