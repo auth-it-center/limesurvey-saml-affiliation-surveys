@@ -24,9 +24,8 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
     protected $settings = [
         'affiliation_mapping' => [
             'type' => 'string',
-            'label' => 'SAML Attribute',
-            'help' => 'SAML attribute used as affiliation',
-            'default' => 'eduPersonPrimaryAffiliation',
+            'label' => 'SAML Affiliation Attribute',
+            'default' => 'eduPersonPrimaryAffiliation'
         ]
     ];
 
@@ -52,19 +51,25 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
                     'default' => false,
                     'current' => $this->get('SAML_affiliation_permit_enabled', 'Survey', $event->get('survey'), false),
                 ],
-                'affiliation_mapping_survey' => [
-                    'type' => 'string',
-                    'label' => 'SAML Attribute',
-                    'help' => 'SAML attribute used as affiliation for current survey',
-                    'default' => $this->get('affiliation_mapping', null, null, 'eduPersonPrimaryAffiliation'),
-                    'current' => $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'), 'eduPersonPrimaryAffiliation'),
-                ],
                 'allowed_affiliation' => [
                     'type' => 'string',
                     'label' => 'Allowed Affiliations',
-                    'help' => 'Comma seperated, without spaces',
+                    'help' => 'Comma separated, without spaces',
                     'default' => 'faculty,student',
                     'current' => $this->get('allowed_affiliation', 'Survey', $event->get('survey'), 'faculty,student'),
+                ],
+                'allowed_status_per_affiliation' => [
+                    'type' => 'string',
+                    'label' => 'Allowed Status per Affiliation',
+                    'help' => 'Comma separated, without spaces',
+                    'default' => 'active,whatever',
+                    'current' => $this->get('allowed_affiliation', 'Survey', $event->get('survey'), 'active,whatever'),
+                ],
+                'affiliation_mapping_survey' => [
+                    'type' => 'string',
+                    'label' => 'SAML Affiliation Attribute',
+                    'default' => $this->get('affiliation_mapping', null, null, $this->settings['affiliation_mapping']['default']),
+                    'current' => $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'), $this->settings['affiliation_mapping']['default']),
                 ]
             ]
         ]);
@@ -95,7 +100,7 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
         return $attributes[$affiliationField][0];
     }
 
-    public function getSurveyAllowedAffilations()
+    public function getSurveyAllowedAffiliations()
     {
         $id = $this->getEvent()->get('surveyId');
         $affiliations = $this->get('allowed_affiliation', 'Survey', $id);
@@ -103,14 +108,39 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
         return $affiliations;
     }
 
+    public function getSurveyAllowedPersonStatuses()
+    {
+        $id = $this->getEvent()->get('surveyId');
+        $personStatus = $this->get('allowed_status_per_affiliation', 'Survey', $id);
+        $personStatus = explode(',', $personStatus);
+        return $personStatus;
+    }
+
     public function beforeSurveyPage()
     {
         $plugin_enabled = $this->get('SAML_affiliation_permit_enabled', 'Survey', $this->event->get('surveyId'));
         if ($plugin_enabled) {
-            $affiliation = $this->getAffiliation();
-            $affiliations = $this->getSurveyAllowedAffilations();
-            if (!in_array($affiliation, $affiliations)) {
+            $person_affiliation = $this->getAffiliation();
+            $affiliations = $this->getSurveyAllowedAffiliations();
+            if (!in_array($person_affiliation, $affiliations)) {
                 throw new CHttpException(403, gT("We are sorry but you are not allowed to participate in this survey."));
+            }
+
+            $PersonStatus = $this->pluginManager->loadPlugin('SAMLPersonStatus');
+            if ($PersonStatus !== null) {
+                $person_status = $PersonStatus->getPersonStatus();
+
+                $person_statuses = $this->getSurveyAllowedPersonStatuses();
+
+                if (count($person_statuses) !== count($affiliations)) {
+                    throw new CHttpException(500, gT("Affiliation count does not match Status per Affiliation count."));
+                }
+
+                array_map(function ($affiliation, $status) use ($PersonStatus, $person_affiliation, $person_status) {
+                    if ($affiliation === $person_affiliation && !$PersonStatus->checkPersonStatus($person_status, $status)) {
+                        throw new CHttpException(403, gT("We are sorry but you do not meet the required affiliation person status to participate in this survey."));
+                    }
+                }, $affiliations, $person_statuses);
             }
         }
     }
