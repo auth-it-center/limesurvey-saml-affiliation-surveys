@@ -30,7 +30,22 @@ and **Enable** the plugin
 * **Enabled** If checked then the plugin is enabled for the selected survey
 * **SAML Attribute** SAML attribute to filter users with for current survey
 * **Allowed Affiliations** Comma separated list of the allowed affiliations that are allowed to participate on the survey
-* **Allowed Status per Affiliation** Comma separated list of the allowed person status that are allowed to participate on the survey
+* **Allowed Status per Affiliation** Comma separated list of the allowed person status per affiliation that are allowed to participate on the survey. Allowed values are:
+  * **active**: only active persons can participate
+  * **inactive**: only inactive person can participate
+  * **whatever**: everyone can participate
+  * **missing**: only persons that their status field is missing can participate
+
+### Config examples
+
+Active Students, faculty members and active staff can participate
+* **Affiliations**: student,faculty,staff
+* **Status**: active,whatever
+
+Only active students can participate
+* **Affiliations**: student
+* **Status**: active
+
 
 ## Images
 ![Global Plugin settings](images/global_settings.png)
