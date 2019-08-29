@@ -4,7 +4,7 @@ Limesurvey plugin to filter users per survey based on SAML affiliation attribute
 ## Requirements
 * LimeSurvey 3.XX
 * [SAML-Plugin](https://github.com/auth-it-center/Limesurvey-SAML-Authentication)
-* (optional) [SAML-Person-Status](https://github.com/auth-it-center/limesurvey-person-status)
+* (optional) [SAML-Person-Status](https://github.com/auth-it-center/limesurvey-saml-person-status)
 
 ## Installation instructions
 1. Copy **SAMLAffiliationPermit** folder with its content at **limesurvey/plugins** folder
