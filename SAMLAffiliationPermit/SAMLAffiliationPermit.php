@@ -62,7 +62,7 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
                     'type' => 'string',
                     'label' => 'Allowed Status per Affiliation',
                     'help' => 'Comma separated, without spaces. One status rule per affiliation. Possible values (whatever, active, inactive, missing)',
-                    'default' => 'active,whatever',
+                    'default' => 'whatever|active,whatever|active',
                     'current' => $this->get('allowed_status_per_affiliation', 'Survey', $event->get('survey'), 'active,whatever'),
                 ],
                 'affiliation_mapping_survey' => [
