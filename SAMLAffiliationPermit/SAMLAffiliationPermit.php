@@ -118,6 +118,15 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
 
     public function beforeSurveyPage()
     {
+        $this->pluginGuard();
+    }
+
+    public function afterSurveyComplete()
+    {
+        $this->pluginGuard();
+    }
+
+    public function pluginGuard() {
         $plugin_enabled = $this->get('SAML_affiliation_permit_enabled', 'Survey', $this->event->get('surveyId'));
         if ($plugin_enabled) {
             $person_affiliation = $this->getAffiliation();
