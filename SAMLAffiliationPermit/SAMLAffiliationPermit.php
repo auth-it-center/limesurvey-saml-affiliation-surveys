@@ -35,44 +35,48 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
         $this->subscribe('newSurveySettings');
         $this->subscribe('beforeSurveyPage');
         $this->subscribe('afterSurveyComplete');
+        $this->subscribe('getGlobalBasePermissions');
     }
 
     public function beforeSurveySettings()
     {
-        $event = $this->event;
+        $permission = Permission::model()->hasGlobalPermission('plugin_settings', 'update');
+        if ($permission) {
+            $event = $this->event;
 
-        $event->set('surveysettings.' . $this->id, [
-            'name' => get_class($this),
-            'settings' => [
-                'SAML_affiliation_permit_enabled' => [
-                    'type' => 'checkbox',
-                    'label' => 'Enabled',
-                    'help' => 'Enable the plugin for this survey',
-                    'default' => false,
-                    'current' => $this->get('SAML_affiliation_permit_enabled', 'Survey', $event->get('survey'), false),
-                ],
-                'allowed_affiliation' => [
-                    'type' => 'string',
-                    'label' => 'Allowed Affiliations',
-                    'help' => 'Comma separated, without spaces',
-                    'default' => 'faculty,student',
-                    'current' => $this->get('allowed_affiliation', 'Survey', $event->get('survey'), 'faculty,student'),
-                ],
-                'allowed_status_per_affiliation' => [
-                    'type' => 'string',
-                    'label' => 'Allowed Status per Affiliation',
-                    'help' => 'Comma separated, without spaces. One status rule per affiliation. Possible values (whatever, active, inactive, missing)',
-                    'default' => 'whatever|active,whatever|active',
-                    'current' => $this->get('allowed_status_per_affiliation', 'Survey', $event->get('survey'), 'active,whatever'),
-                ],
-                'affiliation_mapping_survey' => [
-                    'type' => 'string',
-                    'label' => 'SAML Affiliation Attribute',
-                    'default' => $this->get('affiliation_mapping', null, null, $this->settings['affiliation_mapping']['default']),
-                    'current' => $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'), $this->settings['affiliation_mapping']['default']),
+            $event->set('surveysettings.' . $this->id, [
+                'name' => get_class($this),
+                'settings' => [
+                    'SAML_affiliation_permit_enabled' => [
+                        'type' => 'checkbox',
+                        'label' => 'Enabled',
+                        'help' => 'Enable the plugin for this survey',
+                        'default' => false,
+                        'current' => $this->get('SAML_affiliation_permit_enabled', 'Survey', $event->get('survey'), false),
+                    ],
+                    'allowed_affiliation' => [
+                        'type' => 'string',
+                        'label' => 'Allowed Affiliations',
+                        'help' => 'Comma separated, without spaces',
+                        'default' => 'faculty,student',
+                        'current' => $this->get('allowed_affiliation', 'Survey', $event->get('survey'), 'faculty,student'),
+                    ],
+                    'allowed_status_per_affiliation' => [
+                        'type' => 'string',
+                        'label' => 'Allowed Status per Affiliation',
+                        'help' => 'Comma separated, without spaces. One status rule per affiliation. Possible values (whatever, active, inactive, missing)',
+                        'default' => 'whatever|active,whatever|active',
+                        'current' => $this->get('allowed_status_per_affiliation', 'Survey', $event->get('survey'), 'active,whatever'),
+                    ],
+                    'affiliation_mapping_survey' => [
+                        'type' => 'string',
+                        'label' => 'SAML Affiliation Attribute',
+                        'default' => $this->get('affiliation_mapping', null, null, $this->settings['affiliation_mapping']['default']),
+                        'current' => $this->get('affiliation_mapping_survey', 'Survey', $event->get('survey'), $this->settings['affiliation_mapping']['default']),
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+        }
     }
 
     public function newSurveySettings()
@@ -114,6 +118,22 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
         $personStatus = $this->get('allowed_status_per_affiliation', 'Survey', $id);
         $personStatus = explode(',', $personStatus);
         return $personStatus;
+    }
+
+    public function getGlobalBasePermissions() {
+        $this->getEvent()->append('globalBasePermissions',array(
+            'plugin_settings' => array(
+                'create' => false,
+                'update' => true, // allow only update permission to display
+                'delete' => false,
+                'import' => false,
+                'export' => false,
+                'read' => false,
+                'title' => gT("Save Plugin Settings"),
+                'description' => gT("Allow user to save plugin settings"),
+                'img' => 'usergroup'
+            ),
+        ));
     }
 
     public function beforeSurveyPage()
