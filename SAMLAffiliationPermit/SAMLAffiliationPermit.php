@@ -148,8 +148,19 @@ class SAMLAffiliationPermit extends Limesurvey\PluginManager\PluginBase
 
     public function pluginGuard() {
         $plugin_enabled = $this->get('SAML_affiliation_permit_enabled', 'Survey', $this->event->get('surveyId'));
+
         if ($plugin_enabled) {
+            // If user is admin skip guard
+            $AuthSurvey = $this->pluginManager->loadPlugin('SAMLProtect');
+            if ($AuthSurvey) {
+                $flag = $AuthSurvey->guardBypass($this->event->get('surveyId'));
+                if ($flag) {
+                    return;
+                }
+            }
+
             $person_affiliation = $this->getAffiliation();
+
             $affiliations = $this->getSurveyAllowedAffiliations();
             if (!in_array($person_affiliation, $affiliations)) {
                 throw new CHttpException(403, gT("We are sorry but you are not allowed to participate in this survey."));
